@@ -1,10 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"> 
-<defs> 
-   <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"> 
-     <stop offset="0%" style="stop-color:#E1BEE7"/> 
-     <stop offset="100%" style="stop-color:#AB47BC"/> 
-   </linearGradient> 
-</defs> 
-<rect width="192" height="192" rx="40" fill="url(#bg)"/> 
-<text x="96" y="120" text-anchor="middle" font-size="100" font-family="sans-serif">💰</text> 
-</svg>
+const CACHE = 'chitieu-v1'; 
+const ASSETS = ['./expense-tracker.html', './manifest.json', './icon-192.png']; 
+
+self.addEventListener('install', e => { 
+    e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS))); 
+    self.skipWaiting(); 
+}); 
+
+self.addEventListener('activate', e => { 
+    e.waitUntil(caches.keys().then(keys => 
+        Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))) 
+    )); 
+    self.clients.claim(); 
+}); 
+
+self.addEventListener('fetch', e => { 
+    e.respondWith( 
+        caches.match(e.request).then(r => r || fetch(e.request)) 
+    ); 
+});
